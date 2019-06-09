@@ -1,7 +1,7 @@
 {
   "settings": {
     "name": "lasingularidad",
-    "currentPage": "page1.html",
+    "currentPage": "index.html",
     "theme": {
       "name": "mobirise4",
       "title": "Mobirise 4",
@@ -28,13 +28,13 @@
         "isScrollToTopButton": false
       },
       "additionalSetColors": [
+        "#ed37f7",
         "#fe0c0c",
         "#fef50a",
         "#000000",
         "#a27f0c",
         "#d5990f",
-        "#d99113",
-        "#ffb311"
+        "#d99113"
       ]
     },
     "path": "@PROJECT_PATH@",
@@ -557,7 +557,7 @@
               "text-align": "center"
             },
             ".mbr-text P": {
-              "color": "#fef50a"
+              "color": "#ed37f7"
             }
           },
           "_name": "content1",
@@ -582,7 +582,7 @@
               "text-align": "center"
             },
             ".mbr-text B": {
-              "color": "#ff3366"
+              "color": "#fef50a"
             }
           },
           "_name": "content1",
