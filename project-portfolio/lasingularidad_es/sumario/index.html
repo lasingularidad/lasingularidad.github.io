@@ -1,0 +1,140 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../static/style.css">
+<title>
+  
+  Sumario
+
+</title>
+<body>
+  <header>
+    <a class="site-logo" href="../../../">
+        <img src="/images/singularidad-logo.png" style="height: 3.8rem;" alt="l.A. Singularidad">
+    </a>
+    <nav>
+      <ul class="nav navbar-nav">
+        <li >
+            <a href="../../../">Inicio</a>
+        </li>
+        
+          <li  class="active">
+            <a href="../../">Proyectos</a>
+          </li>
+        
+          <li >
+            <a href="../../../picture-gallery/">Galería</a>
+          </li>
+        
+          <li >
+            <a href="../../../quienes-somos/">Quiénes somos</a>
+          </li>
+        
+      </ul>
+    </nav>
+  </header>
+  <div class="page">
+    
+  <div class="body-map-container">
+
+    <div class="map-column">
+      <ul class="project-map">
+        
+        
+  
+    
+  
+    
+  
+
+  
+
+        
+          <li><a href="./"  class="active" >Sumario</a></li>
+          
+            
+          
+        
+      </ul>
+    </div>
+
+    <div class="body-column">
+      <h2>Sumario</h2>
+      <div class="text-block">
+        <p>Vision general de proyecto y de sus componentes principales.</p>
+
+      </div>
+      <div class="text-block">
+        <h2>Objetivo y requerimientos</h2>
+<p>La pagina web de <a href="https://lasingularidad.es">lasingularidad.es</a> es uno más de nuestros proyectos. La diseñamos como una herramienta para documentar y dar a conocer nuestras creaciones y como tal tenia que cumplir una serie de condiciones:</p>
+<ul>
+<li>Alojamiento gratuito. No esperamos un gran numero de visitas simultaneas y con los <em>hostings</em> más baratos en torno a los 3€ al mes no parece que merezca la pena.</li>
+<li>Facilidad para añadir contenido. De nada sirve tener una web si nadie añade nuevo contenido porque el proceso es demasiado complicado o farragoso. Buscamos poder usar una interfaz de gestion que simplifique el proceso.</li>
+</ul>
+<h2>Alojamiento</h2>
+<p>Para conseguir alojamiento gratuito tenemos dos alternativas: alojar la web en nuestro propio sevidor, en casa; o usar un servicio del estilo de  <a href="https://pages.github.com/">GitHub Pages</a>.</p>
+<p>El alojamiento casero es más fexible, pero claro, supone exponer una parte de nuestra red local a la marabunta de internet; que luego no duerme uno tranquilo. Y también que se va a caer la página web si se va la luz o hay que reiniciar el router. Que tampoco es que vayamos a necesitar una disponibilidad loquisima, pero ahí queda.</p>
+<p>Con <em>GitHub Pages</em> tienes basicamente un repositorio <em>git</em> al que subes los ficheros de la web. Puedes acceder al repositorio desde una <em>URL</em> y la web en sí desde otra. La pega es que solo funciona para páginas estáticas. Como queremos una página relativamente sencilla y no necesitamos hacer ningún cálculo en el servidor, esto a nosotros nos da igual. Total, que nos quedamos con esta opción.</p>
+<h2>Generador del sitio</h2>
+<p>Como generador de la página nos hemos decantado por <a href="https://www.getlektor.com/">Lektor</a>. Hay un monton de generadores de webs estáticas  ahí fuera. <em>GitHub Pages</em> recomienda <a href="https://jekyllrb.com/">Jekyll</a> y es lo tiene perfectamente integrado, pero no es muy amigable para el usuario. Basicamente hay que trabajar directamente con ficheros de texto y eso supone que hay que acordarse de las etiquetas que hay que añadir en la cabecera de cada fichero.</p>
+<p>En mi experiencia eso se traduce en que cada vez que vas a crear una pagina tienes que volverte a leer la documentación, si es que te acuerdas de donde estaba. Es verdad que tiene <a href="https://github.com/jekyll/jekyll-admin">un plugin que genera una interfaz gráfica</a>, pero la interfaz es muy rigida y no me parece adecuada para gestionar distintos tipos de páginas.</p>
+<p><img src="jekyll-admin-ui.png" alt="Jekyll admin UI"></p>
+<p><em>Lektor</em>, por su parte, tiene la interfaz gráfica integrada, pensada como la forma principal de crear contenido. Para cada tipo de página que vayamos a necesitar nos permite definir los campos que apareceran en la interfaz. Así el usuario solo tiene que ir rellenando cada campo con los datos que correspondan.</p>
+<p><img src="lektor-admin-ui-project.png" alt="Lektor admin UI"></p>
+<p>En la imagen de arriba tenemos la interfaz para la pagina de portada de este proyecto. Se pueden ver los campos "Title", "Order", "Abstract", etc. <em>Lektor</em> usa el contenido de estos campos para componer la página.</p>
+<p>Otra cosa que me gusta es la estructura de proyectos de <em>Lektor</em>, que me resulta muy intuitiva. Cada página es un directorio que contiene todos los ficheros con el contenido de la página. Y cada sub-pagina es un subdirectorio.</p>
+<p>Una desventaja es que la documentación de <em>Lektor</em> es un poco límitada. Hay algún concepto al que le vendría bien contar con algún ejemplo, y la comunidad no es muy grande comparada con la de <em>Jekyll</em>, pero está escrito en Python, que es mi lenguaje de programación de trabajo, así que en caso de dudo puedo echar un vistazo a las fuentes a ver que está pasando.</p>
+<h2>Entorno de desarrollo</h2>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div>
+      En <a href="../../">Proyectos:</a> 
+      
+          
+          
+              <a href="../../categories/web/">Web</a> 
+          
+      
+  </div>
+  
+
+  </div>
+  <footer>
+    <h2>Contacto</h2>
+    <div style="float: left;" class="text-block">
+        <ul class="social-media-list">
+            <li>
+                <a class="u-email" href="mailto:info@lasingularidad.es">
+                    <img class="svg-icon" src="/static/email-icon.svg">
+                    <span class="username">info@lasingularidad.es</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://instagram.com/l.a._singularidad">
+                    <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#instagram"></use></svg>
+                    <span class="username">l.a._singularidad</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.twitter.com/ASingularidad">
+                    <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#twitter"></use></svg> 
+                    <span class="username">ASingularidad</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/lasingularidad">
+                <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#github"></use></svg>
+                <span class="username">lasingularidad</span>
+            </a>
+            </li>
+        </ul>
+    </div>
+    <div style="float: right; width: calc(45% - (30px / 2));" class="text-block">
+        No dudes en contactar con nosotros si te interesa alguno de nuestros proyectos o tienes alguna duda.
+    </div>
+
+  </footer>
+</body>
