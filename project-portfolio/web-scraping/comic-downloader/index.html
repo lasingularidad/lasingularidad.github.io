@@ -1,0 +1,605 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../static/style.css">
+<title>
+  
+  Comic downloader
+
+</title>
+<body>
+  <header>
+    <a class="site-logo" href="../../../">
+        <img src="/images/singularidad-logo.png" style="height: 3.8rem;" alt="l.A. Singularidad">
+    </a>
+    <nav>
+      <ul class="nav navbar-nav">
+        <li >
+            <a href="../../../">Inicio</a>
+        </li>
+        
+          <li  class="active">
+            <a href="../../">Proyectos</a>
+          </li>
+        
+          <li >
+            <a href="../../../picture-gallery/">Galería</a>
+          </li>
+        
+          <li >
+            <a href="../../../quienes-somos/">Quiénes somos</a>
+          </li>
+        
+      </ul>
+    </nav>
+  </header>
+  <div class="page">
+    
+  <link rel="stylesheet" href="../../../static/pygments.css">
+  <div class="body-map-container">
+
+    <div class="map-column">
+      <ul class="project-map">
+        
+        
+  
+    
+  
+    
+  
+
+  
+
+        
+          <li><a href="./"  class="active" >Comic downloader</a></li>
+          
+            
+          
+        
+      </ul>
+    </div>
+
+    <div class="body-column">
+      <h2>Comic downloader</h2>
+      <div class="text-block">
+        <p>Utilidad para descargarse automáticamente las páginas de un comic desde una web y generar un archivo <em>.CBZ</em> con ellas.</p>
+
+      </div>
+      <div class="text-block">
+        <h2>Objetivo</h2>
+<p>Últimamente nos ha pasado que hemos buscado un par de comics para descargar y leer en la tablet, pero sólo los hemos encontrado en páginas que permitían leerlos directamente en el navegador, pero no descargarlos. Que, oye, esta bien para verlos en un monitor haciendo scroll con la rueda del ratón, pero en la pantalla de la tablet el "marco" de la web se come mucho espacio y además necesita conexión a internet. O sea que olvídate de leer en el metro, por ejemplo.</p>
+<p>Obviamente, si podemos ver las páginas del comic en el navegador también podemos descargarlas y, con un poco de paciencia reunirlas todas y generar un fichero <a href="https://es.wikipedia.org/wiki/EComic#Formatos_de_los_archivos_de_e-comic">cbz (o cbr)</a> que podamos usar en nuestro lector de comics.</p>
+<p>Una forma de descargarse las imágenes es: cargar la web en el navegador; pulsar con el botón derecho sobre cada página del comic; y seleccionar <code>Guardar imagen</code>, <code>Guardar como</code>, o similar. Esto, a partir de la página 100, como que pierde la gracia, así que vamos a intentar automatizarlo en la medida de lo posible.</p>
+<p>El objetivo de este proyecto es crear un <a href="https://es.wikipedia.org/wiki/Web_scraping"><em>web scraper</em></a> en <em>Python</em> que se conecte a una de estas webs, se descargue automáticamente las imágenes de las páginas del comic y cree un archivo <em>cbz</em> con dichas imágenes</p>
+<h2>Un vistazo a la página web</h2>
+<p>Antes de ponernos a programar tenemos que hacernos una idea de como se organizan los comics en la página web.</p>
+<p>Tomemos como ejemplo la página <a href="https://readcomicsfree.net/">readcomicsfree.net</a>:</p>
+<ul>
+<li><p>En la página principal tenemos una caja de búsqueda unas cuantas listas con las últimas incorporaciones, tendencias, etc.</p>
+<p><img src="cbf-main-page.png" alt=""></p>
+</li>
+<li><p>Si pulsamos sobre algún comic nos lleva hasta su ficha. Aquí podemos ver algunos datos como el autor o el género del comic.</p>
+<p>Una cosa se se agradece es que el formato de las <em>URLs</em> es bastante claro y sencillo. La <em>URL</em> para ir al comic <a href="https://readcomicsfree.net/comic/blitz">Blitz</a>, por ejemplo, (que es comic más reciente en el momento de escribir esto), es <em><a href="https://readcomicsfree.net/comic/blitz">https://readcomicsfree.net/comic/blitz</a></em> y en general, para cualquier comic sigue el formato <strong><a href="https://readcomicsfree.net/comic/{NAME}">https://readcomicsfree.net/comic/{NAME}</a></strong> donde <code>{NAME}</code> es el nombre del comic</p>
+<p>Por otro lado, en el apartado <em>List of Issues</em> podemos ver una lista con los volúmenes o tomos disponibles para visionar.</p>
+<p><img src="cbf-issues-page.png" alt=""></p>
+<p>Cada entrada es un link desde el que podemos leer el correspondiente volumen. Veamos la sección del código fuente que define esta lista:</p>
+<div class="hll"><pre><span></span>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;list-chapter&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;nt_listchapter&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">h2</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;list-title&quot;</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">i</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;fa fa-list&quot;</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nt">i</span><span class="p">&gt;</span> List of issues
+    <span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">nav</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">ul</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;row heading&quot;</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;col-xs-9 no-wrap&quot;</span><span class="p">&gt;</span>Issue Name<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;col-xs-3 no-wrap text-center&quot;</span><span class="p">&gt;</span>Day Added<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;row&quot;</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;col-xs-9 chapter&quot;</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://readcomicsfree.net/comic/blitz/issue-2&quot;</span><span class="p">&gt;</span>Blitz
+            Issue #2<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+          <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;col-xs-3 text-center&quot;</span><span class="p">&gt;</span>12/01/2022<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;row&quot;</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;col-xs-9 chapter&quot;</span><span class="p">&gt;</span>
+              <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://readcomicsfree.net/comic/blitz/issue-1&quot;</span><span class="p">&gt;</span>Blitz
+              Issue #1<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+            <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;col-xs-3 text-center&quot;</span><span class="p">&gt;</span>12/01/2022<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;ctl00_mainContent_ctl01_divPager&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;pagination-outter&quot;</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;pagination&quot;</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</pre></div>
+<p>Aquí vemos que los links que nos interesan están dentro de la sección <code>&lt;div class="list-chapter" id="nt_listchapter"&gt;</code>. También queda claro que las <em>URLs</em> de los volúmenes individuales cumplen el formato <strong><a href="https://readcomicsfree.net/comic/{NAME}/{ISSUE}">https://readcomicsfree.net/comic/{NAME}/{ISSUE}</a></strong>, siendo <code>{NAME}</code> el nombre del comic y <code>{ISSUE}</code> el nombre del tomo o volumen.</p>
+</li>
+<li><p>Inicialmente, al entrar a la <em>URL</em> de un volumen, nos muestra únicamente una página del comic, pero si nos fijamos hay también un botón desplegable donde podemos seleccionar <em>All Pages</em>.</p>
+<p><img src="cbf-reader-page.png" alt=""></p>
+<p>Esto nos lleva a una nueva <em>URL</em> similar a la anterior pero con el sufijo <code>/all</code> al final. Desde aquí ya podemos ver el comic completo haciendo scroll. Con lo que nuestra plantilla para generar las <em>URLs</em> del comic quedaría: <strong><a href="https://readcomicsfree.net/comic/{NAME}/{ISSUE}/all">https://readcomicsfree.net/comic/{NAME}/{ISSUE}/all</a></strong>.</p>
+<p>Vamos al código fuente a ver desde donde se descargan las imágenes:</p>
+<div class="hll"><pre><span></span>...
+<span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#39;page_1&#39;</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;page-chapter&#39;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">img</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;lazy&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#39;Blitz issue 1 - Page 1&#39;</span> <span class="na">data-index</span><span class="o">=</span><span class="s">&#39;1&#39;</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=&quot;</span> <span class="na">data-original</span><span class="o">=</span><span class="s">&#39;https://2.bp.blogspot.com/BAGbHzkIOOycG_XZ8zA2LrwgAAKfDDIm5sD_fL11HlSTROVfEoSnhDbHYrmY_GZ3VCw6Cy3ubiQuQ-umvAFoQ0Gsv8KSvKFZPMpoFI9Wc1ljT8klrQnH7Nm1pxhnld8_CRMSJBq6Cg=s0?rhlupa=MjYwNDphODgwOjQ6MWQwOjo1YTQ6NDAwMA&amp;amp;rnvuka=TW96aWxsYS81LjAgKFgxMTsgTGludXggeDg2XzY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZS8xMDYuMC41MjQ5LjkxIFNhZmFyaS81MzcuMzY=&#39;</span> <span class="p">/&gt;</span>
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#39;page_2&#39;</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;page-chapter&#39;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">img</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;lazy&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#39;Blitz issue 1 - Page 2&#39;</span> <span class="na">data-index</span><span class="o">=</span><span class="s">&#39;2&#39;</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=&quot;</span> <span class="na">data-original</span><span class="o">=</span><span class="s">&#39;https://2.bp.blogspot.com/U6IBkSotsaNcv2mE_u8fUmJxAgFArDcwXwY9hn3LyK-QAH6NNN4tQe-R2F2ps_oWDvevZrICijeTBgHQ_ZqquEFAW7qaUFl14piAwZjYxLat-UXGSfy9oUYmqFv0r19DiKCGXpxlAQ=s0?rhlupa=MjYwNDphODgwOjQ6MWQwOjo1YTQ6NDAwMA&amp;amp;rnvuka=TW96aWxsYS81LjAgKFgxMTsgTGludXggeDg2XzY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZS8xMDYuMC41MjQ5LjkxIFNhZmFyaS81MzcuMzY=&#39;</span> <span class="p">/&gt;</span>
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#39;page_3&#39;</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;page-chapter&#39;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">img</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;lazy&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#39;Blitz issue 1 - Page 3&#39;</span> <span class="na">data-index</span><span class="o">=</span><span class="s">&#39;3&#39;</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=&quot;</span> <span class="na">data-original</span><span class="o">=</span><span class="s">&#39;https://2.bp.blogspot.com/_PRXQJLKxw2U8La2ZvhPfDaG60xKvrv5tmjysnPQ_w7qDzZn2tq4cC0xQnBPCF65r6-Jn7QMyZJwn8nOLLIInxpe_gObKkUQCrKQ4SSKfINHXHgelbcsKw6w5q1aRXd1forL5HYJdA=s0?rhlupa=MjYwNDphODgwOjQ6MWQwOjo1YTQ6NDAwMA&amp;amp;rnvuka=TW96aWxsYS81LjAgKFgxMTsgTGludXggeDg2XzY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZS8xMDYuMC41MjQ5LjkxIFNhZmFyaS81MzcuMzY=&#39;</span> <span class="p">/&gt;</span>
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+...
+</pre></div>
+<p>Lo primero, hay que agradecer a los desarrolladores de esta web que han metido cada imagen en un <code>&lt;div&gt;</code> cuya <em>id</em> es el número de página de la imagen. Esto nos va a simplificar mucho las cosas.</p>
+<p>Por otro lado, los tags <code>&lt;img&gt;</code> está definidos como <code>class="lazy"</code> esto nos hace sospechar que se van a cargar de manera diferida, cosa que confirmamos al hacer scroll en la página. Vemos como las imágenes se van cargando según vamos avanzando.</p>
+<p>Normalmente, veríamos la <em>URL</em> de la imagen en el atributo <code>src</code> de <code>&lt;img&gt;</code>, pero en este caso, al usar una carga diferida, parece que lo que hay en <code>src</code> es simplemente un <em>placeholder</em> que se muestra hasta que carga la imagen definitiva. La <em>URL</em> de la imagen con la página del comic la podemos encontrar en el atributo <code>data-original</code> en este caso.</p>
+</li>
+</ul>
+<p>Con esto ya tenemos toda la información que necesitamos para escribir nuestro script.</p>
+<h2>El script</h2>
+<h3>Dependencias</h3>
+<p>Para el desarrollo hemos usado Python 3.9 y las siguientes librerías externas:</p>
+<ul>
+<li><a href="https://requests.readthedocs.io/en/latest/">Requests</a>: Para conectarnos a la web y descargar su contenido.</li>
+<li><a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/">Beautiful Soup</a>: Para <em>parsear</em> y extraer el contenido de la web.</li>
+<li><a href="https://pillow.readthedocs.io/en/stable/">Pillow</a>: Para crear y guardar las imágenes a partir de los datos descargados <em>en crudo</em>.</li>
+</ul>
+<p>Para tener las mismas versiones de las librerías que hemos usado nosotros y evitar errores de compatibilidad podemos fijar las version al usar <a href="https://pypi.org/project/pip/"><code>pip</code></a> mediante:</p>
+<div class="hll"><pre><span></span>&gt;pip<span class="w"> </span>install<span class="w"> </span><span class="nv">requests</span><span class="o">==</span><span class="m">2</span>.28.1<span class="w"> </span><span class="nv">beautifulsoup4</span><span class="o">==</span><span class="m">4</span>.11.1<span class="w"> </span><span class="nv">pillow</span><span class="o">==</span><span class="m">9</span>.3.0
+</pre></div>
+<h3>Descargando una imagen</h3>
+<p>Empecemos por el núcleo del asunto. ¿Cómo descargamos un fichero de internet? Pues para eso tenemos <em>Requests</em>.</p>
+<div class="hll"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">imgRequest</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ImgURL&#39;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">imgRequest</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="n">imgStream</span> <span class="o">=</span> <span class="n">imgRequest</span><span class="o">.</span><span class="n">raw</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;file.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+<p>Para empezar llamamos a <a href="https://www.w3schools.com/python/ref_requests_get.asp">request.get()</a> y le pasamos la <em>URL</em> de la imagen que queremos descargar.</p>
+<div class="hll"><pre><span></span><span class="n">imgRequest</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ImgURL&#39;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="o">...</span>
+</pre></div>
+<p>Esta función conecta el servidor al que apunta dicha <em>URL</em>, le hace una petición de tipo <a href="https://www.geeksforgeeks.org/different-kinds-of-http-requests/">"GET"</a> y nos devuelve un objeto <a href="https://www.w3schools.com/python/ref_requests_response.asp">request.Response</a> con la respuesta del servidor. Como el fichero que queremos descargar puede ser relativamente grande también pasamos <code>stream=True</code>. De esta manera el cuerpo de la respuesta se tratará como un <em>stream</em> de datos del que podemos ir leyendo como si fuera un fichero, en lugar de descargarse de golpe.</p>
+<p>A continuación comprobamos el código de estado de la respuesta.</p>
+<div class="hll"><pre><span></span><span class="k">if</span> <span class="n">imgRequest</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+<p>El atributo <code>status_code</code> guarda el código de estado de nuestra respuesta. El código <code>200</code> indica que la petición se ha procesado correctamente. Si es el caso, procedemos a la descarga.</p>
+<p>Como dijimos antes, al pasar <code>stream=True</code> en la llamada a <code>requests.get()</code> vamos a obtener el cuerpo de la respuesta en forma de <em>stream</em>.</p>
+<div class="hll"><pre><span></span>    <span class="n">imgStream</span> <span class="o">=</span> <span class="n">imgRequest</span><span class="o">.</span><span class="n">raw</span>
+    <span class="o">...</span>
+</pre></div>
+<p>En este caso, en el atributo <code>raw</code> tenemos un objeto que se comporta como un identificador de fichero.</p>
+<p>Una vez tenemos este <em>identificador</em> podemos usarlo para leer el contenido de la respuesta y guardarlo en un fichero local.</p>
+<div class="hll"><pre><span></span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;file.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+<p>Y con esto ya estaría... Si te fías de que la imagen se ha descargado correctamente, o de que el formato de la imagen es <code>jpg</code>, o de que se trata realmente de una imagen.</p>
+<p>¿Sabes qué? Mejor añadimos algún tipo de comprobación, que a saber qué te acabas de descargar. Para ello vamos a usar <a href="https://pillow.readthedocs.io/en/stable/reference/Image.html"><code>PIL.Image</code></a>, del paquete <code>Pillow</code>.</p>
+<div class="hll"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">imgRequest</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ImgURL&#39;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">imgRequest</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;JPEG&#39;</span><span class="p">:</span>
+        <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.jpg&#39;</span>
+    <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;PNG&#39;</span><span class="p">:</span>
+        <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.png&#39;</span>
+    <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;WEBP&#39;</span><span class="p">:</span>
+        <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.webp&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported image format: </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;file</span><span class="si">{imgExtension}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+<p>Vale, entonces, en lugar de guardar la respuesta del servidor directamente le pasamos el <em>stream</em> a <code>Image.open()</code>.</p>
+<div class="hll"><pre><span></span>    <span class="o">...</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+<p><code>Image</code> es una clase que se usa para generar y manipular imágenes. Lo que nos interesa a nosotros es que <a href="https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html">entiende un montón de formatos</a> de ficheros de imagen distintos. Con <code>Image.open()</code> podemos crear un objeto <code>Image</code> a partir del <em>stream</em> de datos que nos devuelve el servidor. Si los datos se corresponden efectivamente con algún formato de imagen conocido, nos devolverá el objeto <code>Image</code>. Si no, lanza una excepción de este estilo:</p>
+<pre><code>PIL.UnidentifiedImageError: cannot identify image file &lt;_io.BufferedReader&gt;
+</code></pre>
+<p>Con esto nos aseguramos que lo que contiene la variable <code>image</code> es, efectivamente una imagen. Si no, la excepción provocará la finalización del programa con su mensaje de error.</p>
+<p>Ahora que sabemos que tenemos una imagen de verdad, podemos ver que tipo de imagen es usando el atributo <code>format</code>.</p>
+<div class="hll"><pre><span></span>    <span class="o">...</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;JPEG&#39;</span><span class="p">:</span>
+        <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.jpg&#39;</span>
+    <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;PNG&#39;</span><span class="p">:</span>
+        <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.png&#39;</span>
+    <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;WEBP&#39;</span><span class="p">:</span>
+        <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.webp&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported image format: </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+<p>Con esto definimos la extensión de fichero que vamos a usar para guardar la imagen localmente a partir de su tipo original. Nos centramos en imágenes tipo <em>JPEG</em>, <em>PNG</em> o <em>WebP</em>, porque son los formatos que cabe esperar para guardar la página de un comic. En principio, podríamos usar <code>PIL.Image</code> para convertir una imagen entre formatos, cargando un <em>GIF</em> y guardando un <em>JPEG, por ejemplo, pero si lo que nos hemos descargado es un </em>GIF<em> entonces lo más probable es que nos hallamos equivocado de </em>URL<em> y nos estemos descargando un </em>banner*. En ese caso, prefiero lanzar una excepción y que termine el programa.</p>
+<p>Para terminar usamos el método <code>save()</code> del objeto <code>Image</code> para guardar la imagen en disco.</p>
+<div class="hll"><pre><span></span>    <span class="o">...</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;file</span><span class="si">{imgExtension}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+<p>Este método determina el formato con el que queremos guardar la imagen a partir de la extension del fichero de salida.</p>
+<p>Encapsulamos todo dentro de una función y nos queda:</p>
+<div class="hll"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="k">def</span> <span class="nf">downloadImage</span><span class="p">(</span><span class="n">target_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">imgRequest</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">imgRequest</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;JPEG&#39;</span><span class="p">:</span>
+            <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.jpg&#39;</span>
+        <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;PNG&#39;</span><span class="p">:</span>
+            <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.png&#39;</span>
+        <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;WEBP&quot;</span><span class="p">:</span>
+            <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.webp&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported image format: </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">out_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="n">imgExtension</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error requesting image with url &quot;</span><span class="si">{</span><span class="n">target_url</span><span class="si">}</span><span class="s1">&quot;. &#39;</span>
+                              <span class="sa">f</span><span class="s1">&#39;Response code: </span><span class="si">{</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+<p>Esta función se descarga una imagen desde <code>target_url</code> y la guarda en <code>out_path</code> usando la extension que corresponda al tipo de imagen descargada. <code>out_path</code> tiene que ser un objeto de tipo <a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">pathlib.Path</a>.</p>
+<h3>Descargando un volumen completo</h3>
+<p>Vale, ya podemos bajarnos cualquier imagen dada su <em>URL</em>, ahora necesitamos encontrar las <em>URLs</em> de las imágenes que componen el tomo que nos interesa.</p>
+<p>Como hemos visto antes, la <em>URL</em> desde donde se puede leer el tomo es <code>https://readcomicsfree.net/comic/{NAME}/{ISSUE}/all</code>. También vimos que cada imagen del comic se encuentra dentro de un elemento <code>&lt;div&gt;</code> cuya <code>id</code> es el número de página y cuya clase es <code>'page-chapter'</code>:</p>
+<div class="hll"><pre><span></span><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#39;page_1&#39;</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;page-chapter&#39;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">img</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;lazy&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#39;Blitz issue 1 - Page 1&#39;</span> <span class="err">...</span> <span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+...
+</pre></div>
+<p>Lo primero que vamos a hacer es descargarnos el documento <em>html</em> usando <code>requests</code>, como hicimos con las imágenes. Bueno, y ya de paso creamos los directorios donde se irán guardando las imágenes descargadas.</p>
+<div class="hll"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;blitz&#39;</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="s1">&#39;issue-1&#39;</span>
+
+<span class="n">targetDir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+<span class="n">targetDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://readcomicsfree.net/comic/</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">/all&quot;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">volume</span>
+    <span class="n">volumeDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<p>Aquí, <code>target</code> contiene el nombre del comic y <code>volume</code> el nombre del volumen que queremos descargar.</p>
+<p>Primero se crea un directorio con el nombre del comic.</p>
+<div class="hll"><pre><span></span><span class="o">...</span>
+<span class="n">targetDir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+<span class="n">targetDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="o">...</span>
+</pre></div>
+<p>Por otro lado, componemos la <em>URL</em> objetivo y hacemos la petición del documento <em>html</em> con <code>request.get()</code>.</p>
+<div class="hll"><pre><span></span><span class="o">...</span>
+<span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://readcomicsfree.net/comic/</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">/all&quot;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="o">...</span>
+</pre></div>
+<p>Comprobamos el <code>status_code</code> de la respuesta, y si todo ha ido bien creamos un subdirectorio para las imágenes descargadas de este volumen, dentro del directorio general del comic</p>
+<div class="hll"><pre><span></span><span class="o">...</span>
+<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">volume</span>
+    <span class="n">volumeDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<p>Ahora que tenemos el documento <em>html</em>, y por lo que sabemos de como está estructurada la web,  tenemos que buscar todos elementos <code>&lt;img&gt;</code> que estén dentro de un elemento <code>&lt;div class='page-chapter'&gt;</code></p>
+<div class="hll"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+
+<span class="o">...</span> 
+<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">volume</span>
+    <span class="n">volumeDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
+
+    <span class="n">page_divs</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;page-chapter&quot;</span><span class="p">})</span>
+    <span class="k">for</span> <span class="n">div</span> <span class="ow">in</span> <span class="n">page_divs</span><span class="p">:</span>
+        <span class="n">pageName</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">pageNum</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pageName</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading image: </span><span class="si">{</span><span class="n">pageName</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">imgTag</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;img&#39;</span><span class="p">)</span>
+        <span class="n">imgURL</span> <span class="o">=</span> <span class="n">imgTag</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;data-original&#39;</span><span class="p">]</span>
+</pre></div>
+<p>Creamos un objeto <code>BeautifulSoup</code> que parsea el contenido del documento <em>html</em>. Con ese objeto podemos hacer búsqueda con distintos criterios. En este caso, buscamos todos los elementos con <code>class='page-chapter</code>.</p>
+<div class="hll"><pre><span></span><span class="o">...</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
+
+    <span class="n">page_divs</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;page-chapter&quot;</span><span class="p">})</span>
+<span class="o">...</span>
+</pre></div>
+<p>Esto nos devuelve una lista. Ahora, para cada elemento de la lista:</p>
+<ul>
+<li><p>Sacamos el nº de página, porque sabemos que su <code>id</code> es <code>"page_{num}"</code>.</p>
+<div class="hll"><pre><span></span><span class="o">...</span>
+<span class="k">for</span> <span class="n">div</span> <span class="ow">in</span> <span class="n">page_divs</span><span class="p">:</span>
+    <span class="n">pageName</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+    <span class="n">pageNum</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pageName</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
+<span class="o">...</span>
+</pre></div>
+</li>
+<li><p>Buscamos el elemento <code>&lt;img&gt;</code> en su interior.</p>
+<div class="hll"><pre><span></span>    <span class="o">...</span>
+    <span class="n">imgTag</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;img&#39;</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+</li>
+<li><p>Y obtenemos la <em>URL</em> de la imagen que está guardada en el atributo <code>data-original</code> de dicho elemento <code>&lt;img&gt;</code></p>
+<div class="hll"><pre><span></span>    <span class="o">...</span>
+    <span class="n">imgURL</span> <span class="o">=</span> <span class="n">imgTag</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;data-original&#39;</span><span class="p">]</span>
+    <span class="o">...</span>
+</pre></div>
+</li>
+</ul>
+<p>Pues nada, ahora añadimos `downloadImage() para descargarnos la imagen, encapsulamos lo que podamos en una función:</p>
+<div class="hll"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+
+<span class="k">def</span> <span class="nf">downloadImage</span><span class="p">(</span><span class="n">target_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">downloadVolume</span><span class="p">(</span><span class="n">volume_url</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">volume_dir</span><span class="p">:</span><span class="n">Path</span><span class="p">):</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">volume_url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">volume_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
+
+        <span class="n">page_divs</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;page-chapter&quot;</span><span class="p">})</span>
+        <span class="k">for</span> <span class="n">div</span> <span class="ow">in</span> <span class="n">page_divs</span><span class="p">:</span>
+            <span class="n">pageName</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">pageNum</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pageName</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading image: </span><span class="si">{</span><span class="n">pageName</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">imgTag</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;img&#39;</span><span class="p">)</span>
+            <span class="n">imgURL</span> <span class="o">=</span> <span class="n">imgTag</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;data-original&#39;</span><span class="p">]</span>
+            <span class="n">downloadImage</span><span class="p">(</span><span class="n">imgURL</span><span class="p">,</span> <span class="n">volumeDir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;page</span><span class="si">{</span><span class="n">pageNum</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;blitz&#39;</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="s1">&#39;issue-1&#39;</span>
+<span class="n">targetDir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+<span class="n">targetDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">volumeUrl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://readcomicsfree.net/comic/</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">/all&quot;</span>
+<span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">volume</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading pages for volume: </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">downloadVolume</span><span class="p">(</span><span class="n">volumeUrl</span><span class="p">,</span> <span class="n">volumeDir</span><span class="p">)</span>
+</pre></div>
+<p>Fíjate que a el nombre de fichero que le pasamos a <code>downloadImage()</code> lo construimos usando el número de página.</p>
+<p>También hemos añadido un par de llamadas a <code>print()</code> para poder ver como va el proceso de descarga.</p>
+<h3>Generando los ficheros CBZ</h3>
+<p>Esta parte es bastante sencilla. Solo tenemos que comprimir el directorio con todas las imágenes que nos hemos descargado en un fichero <em>.zip</em> y luego cambiarle el nombre por <em>.cbz</em></p>
+<div class="hll"><pre><span></span><span class="o">...</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">buildCBZ</span><span class="p">(</span><span class="n">target_dir</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Compressing folder: </span><span class="si">{</span><span class="n">target_dir</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">make_archive</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;zip&#39;</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">)</span>
+    <span class="n">cbzFileName</span> <span class="o">=</span> <span class="n">target_dir</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.zip&#39;</span><span class="p">)</span>
+    <span class="n">cbzFileName</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">cbzFileName</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.cbz&#39;</span><span class="p">))</span>
+<span class="o">...</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;blitz&#39;</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="s1">&#39;issue-1&#39;</span>
+<span class="n">targetDir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+<span class="n">targetDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">volumeUrl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://readcomicsfree.net/comic/</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">/all&quot;</span>
+<span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">volume</span>
+<span class="n">downloadVolume</span><span class="p">(</span><span class="n">volumeUrl</span><span class="p">,</span> <span class="n">volumeDir</span><span class="p">)</span>
+<span class="n">buildCBZ</span><span class="p">(</span><span class="n">volumeDir</span><span class="p">)</span>
+</pre></div>
+<p>Usamos <code>shutil.make_archive()</code> para generar el archivo <em>.zip</em>. El paquete <code>shutil</code> forma parte de la librería estándar de <em>Python</em>, así que no hace falta instalarlo con *PiP.</p>
+<div class="hll"><pre><span></span><span class="o">...</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">make_archive</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;zip&#39;</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">)</span>
+<span class="o">...</span>
+</pre></div>
+<p>Por cierto que <code>shutil.make_archive()</code> ya añade la extension <em>.zip</em> al fichero de salida, por eso usamos directamente <code>target_dir</code> tanto como nombre del directorio de entrada como del fichero de salida.</p>
+<p>En el caso del ejemplo, acabaríamos con el directorio <code>issue-1</code> y el fichero <code>issue-1.cbz</code> dentro del directorio <code>blitz</code></p>
+<h3>Descargando todos los volúmenes de un cómic</h3>
+<p>En verdad se podría dejar así. Dependiendo de la pereza que te de buscar los nombres de los volúmenes y relanzar el script manualmente para cada volumen. Que tampoco suelen ser muchos. Pero ya que hemos llegado hasta aquí vamos a ver como sacamos las <em>URLs</em> de cada volumen con <em>BeautifulSoup</em>.</p>
+<p>Lo que nos queda por hacer se parece bastante a <code>downloadVolume()</code> así que vamos a verlo directamente encapsulado como función:</p>
+<div class="hll"><pre><span></span><span class="k">def</span> <span class="nf">downloadComic</span><span class="p">(</span><span class="n">comic_name</span><span class="p">,</span> <span class="n">comic_url</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">comic_url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">targetDir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">comic_name</span><span class="p">)</span>
+        <span class="n">targetDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+        <span class="n">listChapterDiv</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;list-chapter&#39;</span><span class="p">})</span>
+        <span class="n">volumeLinkList</span> <span class="o">=</span> <span class="n">listChapterDiv</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">volLink</span> <span class="ow">in</span> <span class="n">volumeLinkList</span><span class="p">:</span>
+            <span class="n">vURL</span> <span class="o">=</span> <span class="n">volLink</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">]</span>
+            <span class="n">vName</span> <span class="o">=</span> <span class="n">vURL</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">vName</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading pages for volume: </span><span class="si">{</span><span class="n">vName</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">downloadVolume</span><span class="p">(</span><span class="n">vURL</span> <span class="o">+</span> <span class="s1">&#39;/all&#39;</span><span class="p">,</span> <span class="n">volumeDir</span><span class="p">)</span>
+            <span class="n">buildCBZ</span><span class="p">(</span><span class="n">volumeDir</span><span class="p">)</span>
+</pre></div>
+<p>Como ya hemos visto antes hacemos una petición a la <em>URL</em> del comic, y si el <code>status_code</code> de la respuesta es correcto creamos el directorio principal del comic.</p>
+<div class="hll"><pre><span></span><span class="k">def</span> <span class="nf">downloadComic</span><span class="p">(</span><span class="n">comic_name</span><span class="p">,</span> <span class="n">comic_url</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">comic_url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">targetDir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">comic_name</span><span class="p">)</span>
+        <span class="n">targetDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="o">...</span>
+</pre></div>
+<p>Luego parseamos el documento con <code>BeautifulSoup()</code> y buscamos el elemento cuya clase es <code>"list-chapter"</code>. Y dentro de ese elemento buscamos todos los tags de link (<code>&lt;a&gt;</code> en <em>HTML</em>). Estos van a contener las <em>URLs</em> donde ver los distintos volúmenes del comic.</p>
+<div class="hll"><pre><span></span>    <span class="o">...</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+    <span class="n">listChapterDiv</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;list-chapter&#39;</span><span class="p">})</span>
+    <span class="n">volumeLinkList</span> <span class="o">=</span> <span class="n">listChapterDiv</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+<p>Entonces, para cada link, extraemos la <em>URL</em> del atributo <code>href</code>. Sabemos de antes que el formato de las <em>URLs</em> de volumen es <em>"<a href="https://readcomicsfree.net/comic/{target}/{volume}">https://readcomicsfree.net/comic/{target}/{volume}</a></em>, así que para sacar el nombre del volumen partimos la cadena con la <em>URL</em> usando el carácter <code>'/'</code> como separador y tomamos el último elemento resultante. Usando ese nombre creamos el subdirectorio para el volumen.</p>
+<div class="hll"><pre><span></span>    <span class="o">...</span>
+    <span class="k">for</span> <span class="n">volLink</span> <span class="ow">in</span> <span class="n">volumeLinkList</span><span class="p">:</span>
+        <span class="n">vURL</span> <span class="o">=</span> <span class="n">volLink</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">]</span>
+        <span class="n">vName</span> <span class="o">=</span> <span class="n">vURL</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">vName</span>
+        <span class="o">...</span>
+</pre></div>
+<p>Ahora sí, para terminar, llamamos a <code>downloadVolume()</code> y <code>buildCBZ()</code>, pero ojo, que las <em>URLs</em> que hemos obtenido antes nos llevan a la versión del sitio donde donde solo se pueden ver las páginas de una en una. Para ir a la versión que muestra todas las páginas a la vez tenemos que añadir <code>'/all'</code> al final de la <em>URL</em> antes de pasársela a <code>downloadVolume()</code></p>
+<div class="hll"><pre><span></span>        <span class="o">...</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading pages for volume: </span><span class="si">{</span><span class="n">vName</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">downloadVolume</span><span class="p">(</span><span class="n">vURL</span> <span class="o">+</span> <span class="s1">&#39;/all&#39;</span><span class="p">,</span> <span class="n">volumeDir</span><span class="p">)</span>
+        <span class="n">buildCBZ</span><span class="p">(</span><span class="n">volumeDir</span><span class="p">)</span>
+</pre></div>
+<h3>Versión final</h3>
+<p>Bueno, pues si juntamos todo lo que hemos visto antes, esta sería la versión final del script completo:</p>
+<div class="hll"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+
+<span class="k">def</span> <span class="nf">downloadComic</span><span class="p">(</span><span class="n">comic_name</span><span class="p">,</span> <span class="n">comic_url</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">comic_url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">targetDir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">comic_name</span><span class="p">)</span>
+        <span class="n">targetDir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+        <span class="n">listChapterDiv</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;list-chapter&#39;</span><span class="p">})</span>
+        <span class="n">volumeLinkList</span> <span class="o">=</span> <span class="n">listChapterDiv</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">volLink</span> <span class="ow">in</span> <span class="n">volumeLinkList</span><span class="p">:</span>
+            <span class="n">vURL</span> <span class="o">=</span> <span class="n">volLink</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">]</span>
+            <span class="n">vName</span> <span class="o">=</span> <span class="n">vURL</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">volumeDir</span> <span class="o">=</span> <span class="n">targetDir</span> <span class="o">/</span> <span class="n">vName</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading pages for volume: </span><span class="si">{</span><span class="n">vName</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">downloadVolume</span><span class="p">(</span><span class="n">vURL</span> <span class="o">+</span> <span class="s1">&#39;/all&#39;</span><span class="p">,</span> <span class="n">volumeDir</span><span class="p">)</span>
+            <span class="n">buildCBZ</span><span class="p">(</span><span class="n">volumeDir</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">downloadVolume</span><span class="p">(</span><span class="n">volume_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">volume_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">volume_url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">volume_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+
+        <span class="n">pageDivs</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;page-chapter&#39;</span><span class="p">})</span>
+        <span class="k">for</span> <span class="n">div</span> <span class="ow">in</span> <span class="n">pageDivs</span><span class="p">:</span>
+            <span class="n">pageName</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">pageNum</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pageName</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading image: </span><span class="si">{</span><span class="n">pageName</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">imgTag</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;img&#39;</span><span class="p">)</span>
+            <span class="n">imgURL</span> <span class="o">=</span> <span class="n">imgTag</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;data-original&#39;</span><span class="p">]</span>
+            <span class="n">downloadImage</span><span class="p">(</span><span class="n">imgURL</span><span class="p">,</span> <span class="n">volume_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;page</span><span class="si">{</span><span class="n">pageNum</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">downloadImage</span><span class="p">(</span><span class="n">target_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">imgRequest</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">imgRequest</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;JPEG&#39;</span><span class="p">:</span>
+            <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.jpg&#39;</span>
+        <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;PNG&#39;</span><span class="p">:</span>
+            <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.png&#39;</span>
+        <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;WEBP&quot;</span><span class="p">:</span>
+            <span class="n">imgExtension</span> <span class="o">=</span> <span class="s1">&#39;.webp&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unsupported image format: </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">format</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">out_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="n">imgExtension</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error requesting image with url &quot;</span><span class="si">{</span><span class="n">target_url</span><span class="si">}</span><span class="s1">&quot;. &#39;</span>
+                              <span class="sa">f</span><span class="s1">&#39;Response code: </span><span class="si">{</span><span class="n">imgRequest</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">buildCBZ</span><span class="p">(</span><span class="n">target_dir</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Compressing folder: </span><span class="si">{</span><span class="n">target_dir</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">make_archive</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;zip&#39;</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">)</span>
+    <span class="n">cbzFileName</span> <span class="o">=</span> <span class="n">target_dir</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.zip&#39;</span><span class="p">)</span>
+    <span class="n">cbzFileName</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">cbzFileName</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.cbz&#39;</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;blitz&#39;</span>
+    <span class="n">targetURL</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;https://readcomicsfree.net/comic/</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="n">downloadComic</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">targetURL</span><span class="p">)</span>
+</pre></div>
+<p>Y hasta aquí nuestro ejemplo. Solo he comentado lo imprescindible de los distintos paquetes que hemos usado para no extenderme demasiado, pero puedes encontrar más información sobre el uso de Python y <em>BeautifulSoup</em> para hacer <em>web scraping</em> <a href="https://j2logo.com/python/web-scraping-con-python-guia-inicio-beautifulsoup/">aquí</a> o <a href="https://realpython.com/beautiful-soup-web-scraper-python/">aquí</a>. Si quieres ir a más bajo nivel la <a href="https://requests.readthedocs.io/en/latest/">guía de usuario</a> de <em>Requests</em> también esta muy bien.</p>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div>
+      En <a href="../../">Proyectos:</a> 
+      
+          
+          <a href="../../categories/web/">Web,</a> 
+          
+      
+          
+          
+              <a href="../../categories/python/">Python</a> 
+          
+      
+  </div>
+  
+
+  </div>
+  <footer>
+    <h2>Contacto</h2>
+    <div style="float: left;" class="text-block">
+        <ul class="social-media-list">
+            <li>
+                <a class="u-email" href="mailto:info@lasingularidad.es">
+                    <img class="svg-icon" src="/static/email-icon.svg">
+                    <span class="username">info@lasingularidad.es</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://instagram.com/l.a._singularidad">
+                    <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#instagram"></use></svg>
+                    <span class="username">l.a._singularidad</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.twitter.com/ASingularidad">
+                    <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#twitter"></use></svg> 
+                    <span class="username">ASingularidad</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/lasingularidad">
+                <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#github"></use></svg>
+                <span class="username">lasingularidad</span>
+            </a>
+            </li>
+        </ul>
+    </div>
+    <div style="float: right; width: calc(45% - (30px / 2));" class="text-block">
+        No dudes en contactar con nosotros si te interesa alguno de nuestros proyectos o tienes alguna duda.
+    </div>
+
+  </footer>
+</body>

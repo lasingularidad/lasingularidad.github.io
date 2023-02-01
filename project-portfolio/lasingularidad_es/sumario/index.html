@@ -34,6 +34,7 @@
   </header>
   <div class="page">
     
+  <link rel="stylesheet" href="../../../static/pygments.css">
   <div class="body-map-container">
 
     <div class="map-column">
@@ -84,6 +85,18 @@
 <p>Otra cosa que me gusta es la estructura de proyectos de <em>Lektor</em>, que me resulta muy intuitiva. Cada página es un directorio que contiene todos los ficheros con el contenido de la página. Y cada sub-pagina es un subdirectorio.</p>
 <p>Una desventaja es que la documentación de <em>Lektor</em> es un poco límitada. Hay algún concepto al que le vendría bien contar con algún ejemplo, y la comunidad no es muy grande comparada con la de <em>Jekyll</em>, pero está escrito en Python, que es mi lenguaje de programación de trabajo, así que en caso de dudo puedo echar un vistazo a las fuentes a ver que está pasando.</p>
 <h2>Entorno de desarrollo</h2>
+<p>La gestión de un sitio con <em>Lektor</em> se realiza a dos niveles:</p>
+<ul>
+<li><p>A nivel "usuario" tenemos la interfaz de administración que nos permite añadir, editar o borrar paginas y gestionar el contenido en general. Esta interfaz la proporciona el propio <em>Lektor</em> cuando lo ejecutamos con el subcomando <code>server</code>.</p>
+</li>
+<li><p>A nivel de "desarrollador" tenemos que definir el tipo de páginas que puede contener nuestro sitio, los campos de datos necesarios para cada tipo de página y las plantillas que se usan para generar el código <em>HTML</em> de la página a partir de dichos datos. Todo esto se especifica mediante una serie de ficheros de texto organizados en <a href="https://www.getlektor.com/docs/project/structure/">una estructura de directorios concreta</a>. Para trabajar con estos ficheros necesitamos un editor de textos.</p>
+</li>
+</ul>
+<p>Pues bien, para trabajar uno solo puedes lanzar tu <code>lektor server</code> en local y usar el editor de texto que más rabia te de. Incluso para un equipo de desarrolladores, puede tener sentido usar un repositorio <em>git</em> para mantener los ficheros sincronizados entre todos y que cada uno use su propio servidor local. Pero a un usuario que "solo" quiere gestionar el contenido no puedes pedirle que se instale y aprenda a usar <em>git</em> y lance su propio servidor.</p>
+<p>Al final lo que hemos hecho es montar un servidor central al que podemos conectarnos desde cualquier ordenador de nuestra <em>LAN</em>. Todos los ficheros del sitio están alojados en dicho servidor, así que no hay que preocuparse de mantener la sincronización entre distintos ordenadores.</p>
+<p>Para la interfaz de administración tenemos un contenedor de <a href="https://docs.docker.com/get-docker/">Docker</a> que ejecuta <code>lektor server</code>. Y para el desarrollo tenemos otro contenedor corriendo <a href="https://github.com/coder/code-server">code-server</a>, que es una versión web de <a href="https://github.com/Microsoft/vscode">VS Code</a>, con lo que podemos editar los ficheros de texto directamente.</p>
+<p><img src="code-server-screenshot.png" alt=""></p>
+<p>Con esto cualquiera que esté conectado a nuestra red local puede trabajar en el sitio web sin necesidad de instalarse ninguna herramienta adicional.</p>
 
       </div>
     </div>
