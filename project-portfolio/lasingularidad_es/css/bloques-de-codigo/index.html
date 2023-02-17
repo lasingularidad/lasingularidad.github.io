@@ -1,0 +1,250 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../../static/style.css">
+<title>
+  
+  Bloques de código
+
+</title>
+<body>
+  <header>
+    <a class="site-logo" href="../../../../">
+        <img src="/images/singularidad-logo.png" style="height: 3.8rem;" alt="l.A. Singularidad">
+    </a>
+    <nav>
+      <ul class="nav navbar-nav">
+        <li >
+            <a href="../../../../">Inicio</a>
+        </li>
+        
+          <li  class="active">
+            <a href="../../../">Proyectos</a>
+          </li>
+        
+          <li >
+            <a href="../../../../picture-gallery/">Galería</a>
+          </li>
+        
+          <li >
+            <a href="../../../../quienes-somos/">Quiénes somos</a>
+          </li>
+        
+      </ul>
+    </nav>
+  </header>
+  <div class="page">
+    
+  <!-- With "get_pygments_stylesheet()|url" we get the url of the slylesheet  used in syntax highlighting -->
+  <link rel="stylesheet" href="../../../../static/pygments.css">
+  <div class="body-map-container">
+
+    <div class="map-column">
+      <ul class="project-map">
+        
+        
+  
+    
+  
+    
+  
+    
+  
+
+  
+
+  
+
+        
+          <li><a href="../../sumario/" >Sumario</a></li>
+          
+        
+          <li><a href="../../preparacion/" >Preparación</a></li>
+          
+        
+          <li><a href="../../lektor/" >Lektor</a></li>
+          
+        
+          <li><a href="../" >CSS</a></li>
+          
+            
+              <ul>
+          <li><a href="./"  class="active" >Bloques de código</a></li>
+          
+            
+          
+        </ul>
+            
+          
+        
+      </ul>
+    </div>
+
+    <div class="body-column">
+      <h2>Bloques de código</h2>
+      <div class="text-block">
+        <p>Queremos mostrar los bloques de código usando coloreado de sintaxis, ajustados al ancho de la columna principal de texto, y con una barra de desplazamiento horizontal para cuando una linea de código sea demasiado larga y no quepa en el espacio disponible en pantalla.</p>
+
+      </div>
+      <div class="text-block">
+        <h2>Introducción</h2>
+<p>Estaba yo todo ufano pensando que ya tenía más o menos resuelta la maquetación de la web (por lo menos para escritorio) cuando termino <a href="lasingularidad.es/project-portfolio/web-scraping/comic-downloader/">el artículo sobre el scraper de comics</a> y al previsualizar me encuentro con esto:</p>
+<p><img src="code-block-broken-preview.png" alt=""></p>
+<p>Hasta ahora, el texto se estaba ajustando correctamente a la anchura del bloque principal de la página, con sus saltos de línea automáticos, como en esta misma página vaya. Pero, de repente, en <a href="lasingularidad.es/project-portfolio/web-scraping/comic-downloader/">Comic Downloader</a> cada párrafo se alarga en una sola línea sin respetar los anchos que tenemos definidos en nuestro <em>CSS</em>.</p>
+<p>¿Qué tiene de especial esta página? Bueno, pues que es la primera en la que meto bloques de código. En estos bloques muestro fragmentos tanto del código <em>HTML</em> de la web que queremos inspeccionar como del script de <em>Python</em> que hace el <em>scrapping</em>. Y como se trata de fragmentos de código fuente, en general, no es buena idea incluir saltos de línea porque el código podría dejar de tener sentido (especialmente en <em>Python</em>), así que cuando se va a mostrar un fragmento de código, lo habitual es envolverlo dentro de un bloque <a href="https://developer.mozilla.org/es/docs/Web/HTML/Element/pre"><code>&lt;pre&gt;</code></a> para indicarle al navegador que debe respetar el formato del texto.</p>
+<p>Todo esto está muy bien, hasta que te encuentras con alguna línea de código especialmente larga como estas:</p>
+<p><a href="code-block-very-long-block.png"><img src="code-block-very-long-block.png" alt=""></a></p>
+<p>Entonces al bloque <code>&lt;pre&gt;</code> no le queda más remedio que crecer a lo ancho hasta que quepa toda la línea. El bloque principal tiene que crecer a su vez para poder contener al <code>&lt;pre&gt;</code>. Y ahora el resto del texto se ajusta a la nueva anchura del bloque principal, que es mucho mayor que la que teníamos originalmente y todo se va de madre.</p>
+<p>O sea, que no podemos meter saltos de línea en los extractos de código, pero tampoco podemos dejarles extenderse hasta el infinito. ¿Qué opción nos queda? Bueno, pues lo que se suele hacer en estos casos es poner una barra de desplazamiento horizontal en el bloque de código, de manera que si hay alguna línea que necesita más anchura de la disponible podemos usar la barra para verla, a la vez que se respeta la maquetación del resto de la página.</p>
+<p>Y ya de paso que nos metemos con esto, vamos a implementar también <a href="https://es.wikipedia.org/wiki/Resaltado_de_sintaxis">resaltado de sintaxis</a> que nunca disgusta.</p>
+<p>Después de los cambios, el mismo extracto de código que teníamos en la imagen anterior se va a ver así:</p>
+<div class="hll"><pre><span></span>  ...
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#39;page_1&#39;</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;page-chapter&#39;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">img</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;lazy&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#39;Blitz issue 1 - Page 1&#39;</span> <span class="na">data-index</span><span class="o">=</span><span class="s">&#39;1&#39;</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=&quot;</span> <span class="na">data-original</span><span class="o">=</span><span class="s">&#39;https://2.bp.blogspot.com/BAGbHzkIOOycG_XZ8zA2LrwgAAKfDDIm5sD_fL11HlSTROVfEoSnhDbHYrmY_GZ3VCw6Cy3ubiQuQ-umvAFoQ0Gsv8KSvKFZPMpoFI9Wc1ljT8klrQnH7Nm1pxhnld8_CRMSJBq6Cg=s0?rhlupa=MjYwNDphODgwOjQ6MWQwOjo1YTQ6NDAwMA&amp;amp;rnvuka=TW96aWxsYS81LjAgKFgxMTsgTGludXggeDg2XzY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZS8xMDYuMC41MjQ5LjkxIFNhZmFyaS81MzcuMzY=&#39;</span> <span class="p">/&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#39;page_2&#39;</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;page-chapter&#39;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">img</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;lazy&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#39;Blitz issue 1 - Page 2&#39;</span> <span class="na">data-index</span><span class="o">=</span><span class="s">&#39;2&#39;</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=&quot;</span> <span class="na">data-original</span><span class="o">=</span><span class="s">&#39;https://2.bp.blogspot.com/U6IBkSotsaNcv2mE_u8fUmJxAgFArDcwXwY9hn3LyK-QAH6NNN4tQe-R2F2ps_oWDvevZrICijeTBgHQ_ZqquEFAW7qaUFl14piAwZjYxLat-UXGSfy9oUYmqFv0r19DiKCGXpxlAQ=s0?rhlupa=MjYwNDphODgwOjQ6MWQwOjo1YTQ6NDAwMA&amp;amp;rnvuka=TW96aWxsYS81LjAgKFgxMTsgTGludXggeDg2XzY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZS8xMDYuMC41MjQ5LjkxIFNhZmFyaS81MzcuMzY=&#39;</span> <span class="p">/&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#39;page_3&#39;</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;page-chapter&#39;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">img</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;lazy&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#39;Blitz issue 1 - Page 3&#39;</span> <span class="na">data-index</span><span class="o">=</span><span class="s">&#39;3&#39;</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=&quot;</span> <span class="na">data-original</span><span class="o">=</span><span class="s">&#39;https://2.bp.blogspot.com/_PRXQJLKxw2U8La2ZvhPfDaG60xKvrv5tmjysnPQ_w7qDzZn2tq4cC0xQnBPCF65r6-Jn7QMyZJwn8nOLLIInxpe_gObKkUQCrKQ4SSKfINHXHgelbcsKw6w5q1aRXd1forL5HYJdA=s0?rhlupa=MjYwNDphODgwOjQ6MWQwOjo1YTQ6NDAwMA&amp;amp;rnvuka=TW96aWxsYS81LjAgKFgxMTsgTGludXggeDg2XzY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZS8xMDYuMC41MjQ5LjkxIFNhZmFyaS81MzcuMzY=&#39;</span> <span class="p">/&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+  ...
+</pre></div>
+<h2>Resaltado de sintaxis</h2>
+<p>Vamos a empezar por aquí que es lo más sencillo. Queremos utilizar algún tipo de resaltado de sintaxis para que nuestros extractos de código sean más legibles. Por suerte existe un <em>plugin</em> de <em>Lector</em> que permite hacer esto de manera automática. Además lo hace simplemente creando una serie de clases <em>CSS</em>, sin necesidad de inyectar ningún tipo de <em>script</em> en las páginas generadas.</p>
+<p>El <em>plugin</em> se llama <a href="https://www.getlektor.com/plugins/lektor-markdown-highlighter/">"lektor-markdown-highlighter"</a> y para instalarlo tenemos que ir al fichero de proyecto de <em>Lektor</em> (<em>.lektorproject</em>) y añadir su nombre y versión en el apartado <code>[packages]</code>.:</p>
+<div class="hll"><pre><span></span><span class="k">[project]</span>
+<span class="na">...</span>
+
+<span class="k">[packages]</span>
+<span class="na">...</span>
+<span class="c1"># La ultima version disponible actualmente es la 0.3.2</span>
+<span class="na">lektor-markdown-highlighter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.3.2</span>
+</pre></div>
+<p>A continuación tenemos que hacer que las páginas donde vallan a mostrarse bloques de código carguen los ficheros <em>CSS</em> necesarios para el coloreado. En nuestro caso estas van a ser las páginas de proyectos. Además, el plugin nos aporta una función para simplificar este proceso: <code>get_pygments_stylesheet()</code>. Sabiendo esto abrimos la plantilla de las paginas de proyectos (<em>project-page.html</em>) e incluimos el link al fichero <em>CSS</em> al comienzo del bloque <code>Body</code>:</p>
+<div class="hll"><pre><span></span>...
+{% block body %}
+  <span class="cm">&lt;!-- Con &quot;get_pygments_stylesheet()|url&quot; conseguimos la URL del fichero CSS con las clases usadas en el resaltado de sintaxis --&gt;</span>
+  <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ get_pygments_stylesheet()|url }}&quot;</span><span class="p">&gt;</span> 
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;body-map-container&quot;</span><span class="p">&gt;</span>
+    ...
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+
+{% endblock %}
+</pre></div>
+<p>Y con esto ya tenemos código de coloricos.</p>
+<h2><em>Lektor</em>, <em>CSS</em> y los bloques de código</h2>
+<p>Cuando nosotros escribimos el contenido de un post lo hacemos en formato <a href="https://es.wikipedia.org/wiki/Markdown"><em>Markdown</em></a>. Luego, antes de publicarlo, <em>Lektor</em> lo transforma en <em>HTML</em> y lo combina con la plantilla que corresponda para crear una nueva página. Así, para mostrar un bloque de código nosotros escribimos:</p>
+<pre><code>```python
+def sum2(left_operand, right_operand){
+  """Calculate the sum of two values"""
+  return left_operand + right_operand
+}
+```
+</code></pre>
+<p>Al generar la página <em>Lektor</em> lo transforma en:</p>
+<pre><code>&lt;div class="hll"&gt;
+  &lt;pre&gt;
+    &lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span  class="nf"&gt;sum2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;left_operand&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;right_operand&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+    &lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="sd"&gt;"""Calculate the sum of two values"""&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;left_operand&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;right_operand&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;/pre&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Y nuestro navegador lo interpreta para mostrarnos esto:</p>
+<p><img src="code-block-sample-default.png" alt=""></p>
+<p>De la versión <em>HTML</em> llama la atención que tenemos el texto envuelto en unas cuantas etiquetas <code>&lt;span&gt;</code> de distintas clases (como <code>&lt;span class="p"&gt;</code> o <code>&lt;span class="n"&gt;</code>). Estas etiquetas las ha generado el plugin <em>lektor-markdown-highlighter</em>. Cada clase representa un tipo de elemento sintáctico. Por ejemplo, <code>class="k"</code> se aplica a <em>keywords</em> como <code>def</code> o <code>return</code> y <code>class="nf"</code> a nombres de función como <code>sum2</code>. El plugin genera, además, un fichero <em>.css</em> asignando distintos colores a cada una de estas clases. De esta manera se consigue el resaltado de sintaxis.</p>
+<p>Por otro lado, todo el texto está envuelto en un bloque <code>&lt;pre&gt;</code> que indica al navegador que debe mostrarse preservando el formato original de tabulaciones y espacios en blanco, tal como se espera de un extracto de código fuente.</p>
+<p>Y por último, tenemos una etiqueta <code>&lt;div class="hll"&gt;</code> envolviendo a todo el conjunto. Esta etiqueta originalmente no hace nada, pero todos los bloques de código que escribamos en <em>Markdown</em> va a acabar envueltos por un <code>&lt;div class="hll"&gt;</code> así que podemos usarlo para identificarlos y personalizar su apariencia mediante <em>CSS</em>.</p>
+<p>Por ejemplo, podemos cambiar el color de fondo y el tamaño del texto para los bloques de código abriendo nuestro fichero <em>.css</em> y añadiendo:</p>
+<div class="hll"><pre><span></span><span class="nt">div</span><span class="p">.</span><span class="nc">hll</span><span class="p">{</span>
+<span class="w">    </span><span class="k">background</span><span class="p">:</span><span class="w"> </span><span class="nb">rgb</span><span class="p">(</span><span class="mi">220</span><span class="p">,</span><span class="w"> </span><span class="mi">230</span><span class="p">,</span><span class="w"> </span><span class="mi">235</span><span class="p">);</span>
+<span class="w">    </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">line-height</span><span class="p">:</span><span class="w"> </span><span class="mf">1.55</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>Con lo que ahora se verían así</p>
+<p><img src="code-block-sample-custom-background.png" alt=""></p>
+<h2>Barras de desplazamiento</h2>
+<blockquote><p>Vale, pero yo aquí venía a poner una barra de desplazamiento porque había unas líneas muy largas y no-se-que-movidas.</p>
+</blockquote>
+<p>Bueno, pues resulta que eso lo podemos hacer mediante <em>CSS</em>. La propiedad <code>overflow-x</code> (<a href="https://www.w3schools.com/cssref/css3_pr_overflow-x.php">doc</a>) sirve para indicar que queremos hacer en caso de que un elemento sea más ancho que su elemento padre (<code>overflow-y</code> hace lo propio con la altura). El valor por defecto es <code>visible</code> que el contenido puede "desbordarse" de manera visible más allá de los límites del contenedor.</p>
+<p>A nosotros nos interesan los valores <code>scroll</code> o <code>auto</code>. Con el primero se muestra siempre una barra de desplazamiento horizontal en la parte inferior del contenedor. Con <code>auto</code> la barra aparece solo cuando es necesaria.</p>
+<p>Al final, el elemento <em>CSS</em> nos queda:</p>
+<div class="hll"><pre><span></span><span class="nt">div</span><span class="p">.</span><span class="nc">hll</span><span class="p">{</span>
+<span class="w">    </span><span class="k">background</span><span class="p">:</span><span class="w"> </span><span class="nb">rgb</span><span class="p">(</span><span class="mi">220</span><span class="p">,</span><span class="w"> </span><span class="mi">230</span><span class="p">,</span><span class="w"> </span><span class="mi">235</span><span class="p">);</span>
+<span class="w">    </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">line-height</span><span class="p">:</span><span class="w"> </span><span class="mf">1.55</span><span class="p">;</span>
+<span class="w">    </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="kt">px</span><span class="w"> </span><span class="mi">20</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">width</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="kt">%</span><span class="p">;</span>
+<span class="w">    </span><span class="k">box-sizing</span><span class="p">:</span><span class="w"> </span><span class="kc">border-box</span><span class="p">;</span>
+<span class="w">    </span><span class="k">overflow-x</span><span class="p">:</span><span class="w"> </span><span class="kc">auto</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>Con <code>width:100%;</code> y <code>box-sizing: border-box;</code> indicamos que nuestro bloque de código debe tener el mismo ancho que la columna de texto que lo contiene y que incluimos el tamaño de sus bordes en el calculo. Y con <code>overflow-x: auto;</code> le decimos al navegador que si el contenido es más grande de lo que cabe en ese ancho añada una barra de desplazamiento para poder verlo todo.</p>
+<p>Al final, los bloques de código nos quedan con esta pinta:</p>
+<div class="hll"><pre><span></span>    <span class="k">def</span> <span class="nf">sum2</span><span class="p">(</span><span class="n">left_operand</span><span class="p">,</span> <span class="n">right_operand</span><span class="p">){</span>
+<span class="w">      </span><span class="sd">&quot;&quot;&quot;Calculate the sum of two values&quot;&quot;&quot;</span>
+      <span class="k">return</span> <span class="n">left_operand</span> <span class="o">+</span> <span class="n">right_operand</span>
+    <span class="p">}</span>
+</pre></div>
+<p><br></p>
+<div class="hll"><pre><span></span>    <span class="k">def</span> <span class="nf">AVeryLongAndConvolutedVaguelyDescriptiveFunctionName</span><span class="p">(</span><span class="n">left_hand_operand_hopefully_a_number</span><span class="p">,</span> <span class="n">right_hand_operand_hopefully_a_number</span><span class="p">){</span>
+<span class="w">      </span><span class="sd">&quot;&quot;&quot;Calculate the sum of two values. There probably are better ways to do this, but this is our way.&quot;&quot;&quot;</span>
+      <span class="k">return</span> <span class="n">left_hand_operand_hopefully_a_number</span> <span class="o">+</span> <span class="n">right_hand_operand_hopefully_a_number</span>
+    <span class="p">}</span>
+</pre></div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div>
+      En <a href="../../../">Proyectos:</a> 
+      
+          
+          
+              <a href="../../../categories/web/">Web</a> 
+          
+      
+  </div>
+  
+
+  </div>
+  <footer>
+    <h2>Contacto</h2>
+    <div style="float: left;" class="text-block">
+        <ul class="social-media-list">
+            <li>
+                <a class="u-email" href="mailto:info@lasingularidad.es">
+                    <img class="svg-icon" src="/static/email-icon.svg">
+                    <span class="username">info@lasingularidad.es</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://instagram.com/l.a._singularidad">
+                    <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#instagram"></use></svg>
+                    <span class="username">l.a._singularidad</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.twitter.com/ASingularidad">
+                    <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#twitter"></use></svg> 
+                    <span class="username">ASingularidad</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/lasingularidad">
+                <svg class="svg-icon"><use xlink:href="/static/minima-social-icons.svg#github"></use></svg>
+                <span class="username">lasingularidad</span>
+            </a>
+            </li>
+        </ul>
+    </div>
+    <div style="float: right; width: calc(45% - (30px / 2));" class="text-block">
+        No dudes en contactar con nosotros si te interesa alguno de nuestros proyectos o tienes alguna duda.
+    </div>
+
+  </footer>
+</body>

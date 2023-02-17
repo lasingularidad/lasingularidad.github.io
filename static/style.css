@@ -179,7 +179,7 @@ div.hll{
     padding: 5px 20px;
     width: 100%;
     box-sizing: border-box;
-    overflow-x: scroll;
+    overflow-x: auto;
 }
 
 div.gallery-headline,
