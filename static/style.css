@@ -63,7 +63,7 @@ img{
 
 div.page{
     display: table;
-    width: 100%;
+    /*width: 100%;*/
 }
 
 .adaptive-width{
@@ -246,6 +246,63 @@ div.item-title-text{
 div.item-navigation{
     text-align: center;
     padding: 5px 0px;
+}
+
+div.central-image-wrapper{
+    margin: 10px 20px;
+    position: relative;
+}
+
+.prev-overlay {
+    /*color: #005c97;
+    text-decoration: none;*/
+    opacity: 0;
+    display: table;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 25%;
+    height: 100%;
+    /*font-size: 5rem;
+    text-align: center;
+    color: #00A5DC;*/
+    background-image: linear-gradient(-90deg,rgba(64,64,64,0), rgba(64,64,64,0.75), rgb(64, 64, 64));
+}
+
+.next-overlay {
+    /*color: #005c97;
+    text-decoration: none;*/
+    opacity: 0;
+    display: table;
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 25%;
+    height: 100%;
+    background-image: linear-gradient(90deg,rgba(64,64,64,0), rgba(64,64,64,0.75), rgb(64, 64, 64));
+}
+
+.prev-overlay:hover{
+    text-decoration: none;
+    opacity: 1;
+    transition: 0.5s ease;
+}
+
+.next-overlay:hover{
+    text-decoration: none;
+    opacity: 1;
+    transition: 0.5s ease;
+}
+
+
+div.side-overlay-text{
+    font-size: 5rem;
+    text-align: center;
+    color: #00A5DC;
+    display: table-cell;
+    height: 100%;
+    vertical-align: middle;
+    padding: 0 5px;
 }
 
 .text-block{
