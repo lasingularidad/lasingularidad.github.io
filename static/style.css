@@ -6,6 +6,10 @@
   font-family: 'pixel';
   src: url("/fonts/CONSOLA.TTF"); }
 
+.nowrap {
+    white-space: nowrap ;
+}
+
 body {
     /*font-size: 16px;*/
     font-family: 'pixel';
